@@ -111,7 +111,7 @@ int main(void)
 	  char gps[200];
 	  char gps1[150];
 
-	  HAL_UART_Receive(&huart1, (uint8_t*)gps, 200, HAL_MAX_DELAY);
+	  HAL_UART_Receive_IT(&huart1, (uint8_t*)gps, 200);
 
 	  sprintf(gps1, "\r\n%s\r\n", gps);
 
@@ -120,7 +120,6 @@ int main(void)
 		  myFlag = false;
 		  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_6);
 		  HAL_UART_Transmit(&huart2, (uint8_t*)gps1, 200, HAL_MAX_DELAY);
-		  HAL_Delay(500);
 	  }
   }
   /* USER CODE END 3 */
@@ -326,6 +325,9 @@ static void MX_GPIO_Init(void)
 
   HAL_NVIC_SetPriority(EXTI4_15_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
+
+  HAL_NVIC_SetPriority(USART1_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(USART1_IRQn);
 
 }
 
