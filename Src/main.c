@@ -109,18 +109,53 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  char gps[500];
-	  char gps1[300];
+	  char gps[700];
+	  char str[680];
+	  /*char sub[] = "$GPGGA";
+	  char *p1, *p2, *p3;
+	  int i=0,j=0,flag=0;*/
 
-	  HAL_UART_Receive_IT(&huart1, (uint8_t*)gps, 500);
+	  /*HAL_UART_Receive_IT(&huart1, (uint8_t*)gps, 700);
 
-	  sprintf(gps1, "\r\n%s\r\n", gps);
+	  sprintf(str, "\r\n\n\n%s\r\n", gps);*/
+/*
+	  p1 = str;
+	  p2 = sub;
 
+	  for(i = 0; i<strlen(str); i++)
+	    {
+	      if(*p1 == *p2)
+	        {
+	            p3 = p1;
+	            for(j = 0;j<strlen(sub);j++)
+	            {
+	              if(*p3 == *p2)
+	              {
+	                p3++;p2++;
+	              }
+	              else
+	                break;
+	            }
+	            p2 = sub;
+	            if(j == strlen(sub))
+	            {
+	               flag = 1;
+	               HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_6);
+	            }
+	        }
+	      p1++;
+	    }
+	    if(flag==0)
+	    {
+	    	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_7);
+	    }
+*/
 	  if (myFlag == true)
 	  {
+		  HAL_UART_Receive_IT(&huart1, (uint8_t*)gps, 700);
+		  sprintf(str, "\r\n\n\n%s\r\n", gps);
+		  HAL_UART_Transmit(&huart2, (uint8_t*)str, 680, HAL_MAX_DELAY);
 		  myFlag = false;
-		  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_6);
-		  HAL_UART_Transmit(&huart2, (uint8_t*)gps1, 300, HAL_MAX_DELAY);
 	  }
   }
   /* USER CODE END 3 */
@@ -329,7 +364,6 @@ static void MX_GPIO_Init(void)
 
   HAL_NVIC_SetPriority(USART1_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(USART1_IRQn);
-
 }
 
 /* USER CODE BEGIN 4 */
@@ -339,16 +373,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_PIN){
 	{
 		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_5);
 		myFlag = true;
-	}
-}
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
-{
-/* Set transmission flag: transfer complete*/
-	if (UartHandle == &huart1)
-	{
-		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_7);
-		UartReady = SET;
 	}
 }
 
