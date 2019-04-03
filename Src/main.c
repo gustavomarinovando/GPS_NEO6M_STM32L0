@@ -109,52 +109,103 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  char gps[700];
-	  char str[680];
-	  /*char sub[] = "$GPGGA";
+	  char gps[650];
+	  char str[630];
+	  char sub[] = "$GPGGA";
+	  char msg[100];
+	  char latstr[30], lngstr[30];
 	  char *p1, *p2, *p3;
-	  int i=0,j=0,flag=0;*/
+	  int a, i=0, j=0, flag=0;
+	  char lats1[10],lngs1[10],lats2[10],lngs2[10],latd[10],lngd[10];
+	  float lat1, lat2, lng1, lng2, latf, lngf, b, c = 0;
 
-	  /*HAL_UART_Receive_IT(&huart1, (uint8_t*)gps, 700);
+	  /*HAL_UART_Receive_IT(&huart1, (uint8_t*)gps, 650);
+	  sprintf(str, "\r\n\n\n GPS DATA STARTS HERE \n%s\r\n", gps);*/
 
-	  sprintf(str, "\r\n\n\n%s\r\n", gps);*/
-/*
-	  p1 = str;
-	  p2 = sub;
-
-	  for(i = 0; i<strlen(str); i++)
-	    {
-	      if(*p1 == *p2)
-	        {
-	            p3 = p1;
-	            for(j = 0;j<strlen(sub);j++)
-	            {
-	              if(*p3 == *p2)
-	              {
-	                p3++;p2++;
-	              }
-	              else
-	                break;
-	            }
-	            p2 = sub;
-	            if(j == strlen(sub))
-	            {
-	               flag = 1;
-	               HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_6);
-	            }
-	        }
-	      p1++;
-	    }
-	    if(flag==0)
-	    {
-	    	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_7);
-	    }
-*/
 	  if (myFlag == true)
 	  {
-		  HAL_UART_Receive_IT(&huart1, (uint8_t*)gps, 700);
-		  sprintf(str, "\r\n\n\n%s\r\n", gps);
-		  HAL_UART_Transmit(&huart2, (uint8_t*)str, 680, HAL_MAX_DELAY);
+		  HAL_UART_Receive_IT(&huart1, (uint8_t*)gps, 650);
+		  sprintf(str, "\r\n\n\nGPS DATA STARTS HERE\n%s\r\n", gps);
+
+		  p1 = str;
+		  p2 = sub;
+
+		  for(i = 0; i<strlen(str); i++)
+		    {
+		      if(*p1 == *p2)
+		        {
+		            p3 = p1;
+		            for(j = 0;j<strlen(sub);j++)
+		            {
+		              if(*p3 == *p2)
+		              {
+		                p3++;p2++;
+		              }
+		              else
+		                break;
+		            }
+		            p2 = sub;
+		            if(j == strlen(sub))
+		            {
+		               flag = 1;
+		               HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, SET);
+		               sprintf(msg, "\r\nSubstring found at: %d\r\n", i);
+
+						for (a = 0; a <= 1; a++)
+						   {
+							   lats1[a] = msg[a + i + 16];
+							   lngs1[a] = msg[a + i + 30];
+						   }
+
+						   lat1 = atof(lats1);
+						   lng1 = atof(lngs1);
+
+						   for (a = 0; a <= 7; a++)
+						   {
+							   lats2[a] = msg[a + i + 18];
+							   lngs2[a] = msg[a + i + 32];
+						   }
+
+						   latd[0] = msg[i + 27];
+						   lngd[0] = msg[i + 41];
+
+						   if (latd[0] == 'S')
+						   {
+							   b = -1;
+						   }
+						   else
+						   {
+							   b = 1;
+						   }
+						   if (lngd[0] == 'W')
+						   {
+							   c = -1;
+						   }
+						   else
+						   {
+							   c = 1;
+						   }
+
+						   lat2 = atof(lats2)/60;
+						   lng2 = atof(lngs2)/60;
+
+						   latf = b * (lat1 + lat2);
+						   lngf = c * (lng1 + lng2);
+
+						   sprintf(latstr, "Your latitude is: %f\r\n", latf);
+						   sprintf(lngstr, "Your longitude is: %f\r\n", lngf);
+		            }
+		        }
+		      p1++;
+		    }
+		    if(flag==0)
+		    {
+		    	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, RESET);
+		    }
+
+		  HAL_UART_Transmit(&huart2, (uint8_t*)latstr, strlen(latstr), HAL_MAX_DELAY);
+		  HAL_UART_Transmit(&huart2, (uint8_t*)lngstr, strlen(lngstr), HAL_MAX_DELAY);
+		  HAL_UART_Transmit(&huart2, (uint8_t*)msg, 26, HAL_MAX_DELAY);
 		  myFlag = false;
 	  }
   }
@@ -371,8 +422,12 @@ static void MX_GPIO_Init(void)
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_PIN){
 	if (GPIO_PIN == GPIO_PIN_2)
 	{
-		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_5);
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, SET);
 		myFlag = true;
+	}
+	else
+	{
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, RESET);
 	}
 }
 
